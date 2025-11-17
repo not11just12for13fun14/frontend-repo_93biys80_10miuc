@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingCart, User, Folder, Grid3X3, LogIn, Send, Phone, Mail, ChevronRight } from 'lucide-react'
+import { ShoppingCart, User, Folder, Grid3X3, LogIn, Send, Phone, Mail, ChevronRight, Users } from 'lucide-react'
 import Spline from '@splinetool/react-spline'
 
 const backend = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
@@ -32,9 +32,9 @@ export default function Layout() {
   const [sweepKey, setSweepKey] = useState(0)
 
   useEffect(() => {
-    fetch(`${backend}/categories`).then(r => r.json()).then(setCategories)
-    fetch(`${backend}/products`).then(r => r.json()).then(setProducts)
-    fetch(`${backend}/portfolio`).then(r => r.json()).then(setPortfolio)
+    fetch(`${backend}/categories`).then(r => r.json()).then(setCategories).catch(()=>{})
+    fetch(`${backend}/products`).then(r => r.json()).then(setProducts).catch(()=>{})
+    fetch(`${backend}/portfolio`).then(r => r.json()).then(setPortfolio).catch(()=>{})
   }, [])
 
   useEffect(() => {
@@ -89,12 +89,37 @@ export default function Layout() {
     }
   }
 
+  // Placeholder content to showcase layout if backend has no data yet
+  const demoProducts = [
+    {
+      id: 'demo-1', title: 'Engraved Wood Plaque', description: 'American walnut, satin finish, deep laser pass for crisp typography.', price: 89,
+      image_url: 'https://images.unsplash.com/photo-1568051243858-6a2e5e3f80a3?q=80&w=1200&auto=format&fit=crop'
+    },
+    {
+      id: 'demo-2', title: 'Brushed Steel Card', description: 'Ultra-thin stainless card, micro-etched logo with pearlescent shimmer.', price: 49,
+      image_url: 'https://images.unsplash.com/photo-1536412597336-ade7f1b53f77?q=80&w=1200&auto=format&fit=crop'
+    },
+    {
+      id: 'demo-3', title: 'Acrylic Desk Sign', description: 'Smoked acrylic with frost-engraved lettering and subtle underglow.', price: 129,
+      image_url: 'https://images.unsplash.com/photo-1523419409543-a9de4f3a3ab3?q=80&w=1200&auto=format&fit=crop'
+    },
+  ]
+
+  const demoPortfolio = [
+    { id: 'pf-1', title: 'Boutique Hotel Keys', description: 'Black anodized tags with laser white mark.', client_name: 'Nocturne Hotel', image_url: 'https://images.unsplash.com/photo-1563298723-dcfebaa392e3?q=80&w=1200&auto=format&fit=crop' },
+    { id: 'pf-2', title: 'Whiskey Brand Coasters', description: 'Charred oak coasters, brass inlay engraved seats.', client_name: 'Eclipse Distillers', image_url: 'https://images.unsplash.com/photo-1601034913836-a6d09e22b725?q=80&w=1200&auto=format&fit=crop' },
+    { id: 'pf-3', title: 'Tech Conference Badges', description: 'Matte acrylic with QR and anti-glare coating.', client_name: 'Vector Summit', image_url: 'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=1200&auto=format&fit=crop' },
+  ]
+
+  const displayProducts = filteredProducts.length ? filteredProducts : demoProducts
+  const displayPortfolio = portfolio.length ? portfolio : demoPortfolio
+
   return (
     <div className="min-h-screen bg-[#0b0f14] text-zinc-100">
       <LaserSweep triggerKey={sweepKey} />
-      <div className="grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)_340px] min-h-screen">
-        {/* Left: Navigation */}
-        <aside className="border-r border-white/10 px-5 py-6 md:py-10 space-y-8 sticky top-0 h-screen bg-black/20 backdrop-blur">
+      <div className="grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)_360px] min-h-screen">
+        {/* Left: Navigation as full-height block tiles */}
+        <aside className="border-r border-white/10 px-4 md:px-5 py-6 md:py-8 space-y-6 sticky top-0 h-screen bg-black/20 backdrop-blur">
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-sm bg-white/10" />
             <div>
@@ -103,37 +128,55 @@ export default function Layout() {
             </div>
           </div>
 
-          <nav className="space-y-2 text-sm">
-            <button onClick={() => setView('products')} className={`group w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-white/5 ${view==='products'?'bg-white/5':''}`}>
-              <Grid3X3 className="size-4 text-white/70" />
-              <span className="text-white/80">Products</span>
-              <ChevronRight className="ml-auto size-4 opacity-0 group-hover:opacity-100" />
-            </button>
-            <button onClick={() => setView('portfolio')} className={`group w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-white/5 ${view==='portfolio'?'bg-white/5':''}`}>
-              <Folder className="size-4 text-white/70" />
-              <span className="text-white/80">Portfolio</span>
-              <ChevronRight className="ml-auto size-4 opacity-0 group-hover:opacity-100" />
-            </button>
-            <button onClick={() => setView('account')} className={`group w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-white/5 ${view==='account'?'bg-white/5':''}`}>
-              <User className="size-4 text-white/70" />
-              <span className="text-white/80">Account</span>
-              <ChevronRight className="ml-auto size-4 opacity-0 group-hover:opacity-100" />
-            </button>
-          </nav>
+          {/* Tall block navigation fills available space */}
+          <div className="flex flex-col gap-3 min-h-0 flex-1">
+            <div className="grid grid-rows-3 gap-3 flex-1">
+              <button onClick={() => setView('products')} className={`group w-full rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] transition flex items-center justify-between px-4 ${view==='products'?'ring-1 ring-cyan-300/30':''}`}>
+                <div className="flex items-center gap-3 py-6">
+                  <Grid3X3 className="size-4 text-white/70" />
+                  <div className="text-left">
+                    <div className="text-white/80">Products</div>
+                    <div className="text-xs text-white/40">Browse, add to cart</div>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 opacity-60" />
+              </button>
+              <button onClick={() => setView('portfolio')} className={`group w-full rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] transition flex items-center justify-between px-4 ${view==='portfolio'?'ring-1 ring-cyan-300/30':''}`}>
+                <div className="flex items-center gap-3 py-6">
+                  <Folder className="size-4 text-white/70" />
+                  <div className="text-left">
+                    <div className="text-white/80">Portfolio</div>
+                    <div className="text-xs text-white/40">Selected works</div>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 opacity-60" />
+              </button>
+              <button onClick={() => setView('clients')} className={`group w-full rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] transition flex items-center justify-between px-4 ${view==='clients'?'ring-1 ring-cyan-300/30':''}`}>
+                <div className="flex items-center gap-3 py-6">
+                  <Users className="size-4 text-white/70" />
+                  <div className="text-left">
+                    <div className="text-white/80">Clients</div>
+                    <div className="text-xs text-white/40">Logos & testimonials</div>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 opacity-60" />
+              </button>
+            </div>
+          </div>
 
-          <div className="pt-6 border-t border-white/10">
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-3">Categories</p>
-            <div className="space-y-1">
-              <button onClick={() => setActiveCategory('')} className={`text-left w-full px-3 py-1.5 rounded hover:bg-white/5 ${activeCategory===''?'bg-white/5':''}`}>All</button>
+          {/* Categories as solid blocks */}
+          <div className="pt-2">
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">Categories</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setActiveCategory('')} className={`text-left w-full px-3 py-3 rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] ${activeCategory===''?'ring-1 ring-cyan-300/30':''}`}>All</button>
               {categories.map(c => (
-                <button key={c.id} onClick={() => setActiveCategory(c.slug)} className={`text-left w-full px-3 py-1.5 rounded hover:bg-white/5 ${activeCategory===c.slug?'bg-white/5':''}`}>{c.name}</button>
+                <button key={c.id} onClick={() => setActiveCategory(c.slug)} className={`text-left w-full px-3 py-3 rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] ${activeCategory===c.slug?'ring-1 ring-cyan-300/30':''}`}>{c.name}</button>
               ))}
             </div>
           </div>
 
-          <div className="hidden md:block pt-8">
-            <p className="text-xs text-white/40">Need something custom? Send us your idea.</p>
-            <a href="#contact" onClick={() => setView('contact')} className="mt-3 inline-flex items-center gap-2 text-cyan-300">
+          <div className="hidden md:block pt-2">
+            <a href="#contact" onClick={() => setView('account')} className="mt-1 inline-flex w-full items-center justify-center gap-2 px-4 py-3 rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-cyan-300">
               <Send className="size-4" /> Start a brief
             </a>
           </div>
@@ -155,7 +198,7 @@ export default function Layout() {
 
             {view === 'products' && (
               <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map(p => (
+                {displayProducts.map(p => (
                   <motion.div key={p.id} whileHover={{ y: -2 }} className="group rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
                     <div className="aspect-[4/3] overflow-hidden relative">
                       <img src={p.image_url} alt={p.title} className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition" />
@@ -165,8 +208,8 @@ export default function Layout() {
                       <h3 className="text-white/90 font-medium">{p.title}</h3>
                       <p className="text-white/50 text-sm line-clamp-2 mt-1">{p.description}</p>
                       <div className="flex items-center justify-between mt-4">
-                        <span className="text-cyan-300">${p.price.toFixed(2)}</span>
-                        <button onClick={() => addToCart(p)} className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-cyan-300/30 text-cyan-200 hover:bg-cyan-300/10">
+                        <span className="text-cyan-300">${(p.price ?? 0).toFixed(2)}</span>
+                        <button onClick={() => addToCart(p)} className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-cyan-300/30 text-cyan-200 hover:bg-cyan-300/10">
                           <ShoppingCart className="size-4" /> Add
                         </button>
                       </div>
@@ -178,7 +221,7 @@ export default function Layout() {
 
             {view === 'portfolio' && (
               <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {portfolio.map(w => (
+                {displayPortfolio.map(w => (
                   <motion.div key={w.id} whileHover={{ y: -2 }} className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
                     <div className="aspect-[4/3] overflow-hidden relative">
                       <img src={w.image_url} alt={w.title} className="object-cover w-full h-full opacity-90" />
@@ -191,6 +234,33 @@ export default function Layout() {
                     </div>
                   </motion.div>
                 ))}
+              </div>
+            )}
+
+            {view === 'clients' && (
+              <div className="mt-10 space-y-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {["Nocturne","Eclipse","Vector","Ascent","Zenith","Nebula","Halo","Mono"].map((name,i)=> (
+                    <div key={i} className="rounded-md border border-white/10 bg-white/[0.02] px-4 py-8 flex items-center justify-center text-white/60 text-sm tracking-widest uppercase">
+                      {name}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="size-9 rounded-full bg-white/10" />
+                        <div>
+                          <p className="text-white/80">Client {i}</p>
+                          <p className="text-white/40 text-xs">Brand Project</p>
+                        </div>
+                      </div>
+                      <p className="text-white/60 text-sm mt-3">“Exquisite finish and attention to detail. The laser white mark on matte black is unreal.”</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -213,7 +283,7 @@ export default function Layout() {
                       <label className="text-xs text-white/50">Email</label>
                       <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@studio.com" className="mt-1 w-full bg-white/[0.06] border border-white/10 rounded px-3 py-2 outline-none focus:border-cyan-300/40" />
                     </div>
-                    <button onClick={login} className="inline-flex items-center gap-2 px-4 py-2 rounded border border-white/10 hover:border-cyan-300/40">
+                    <button onClick={login} className="inline-flex items-center gap-2 px-4 py-3 rounded-md border border-white/10 hover:border-cyan-300/40 bg-white/[0.03]">
                       <LogIn className="size-4" /> Continue
                     </button>
                   </div>
@@ -223,37 +293,40 @@ export default function Layout() {
           </div>
         </main>
 
-        {/* Right: Contextual panel */}
-        <aside className="border-l border-white/10 px-5 py-6 md:py-10 space-y-6 sticky top-0 h-screen bg-black/20 backdrop-blur">
+        {/* Right: Contextual panel with blocky cards */}
+        <aside className="border-l border-white/10 px-4 md:px-5 py-6 md:py-8 space-y-6 sticky top-0 h-screen bg-black/20 backdrop-blur">
           {view === 'products' && (
-            <div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm uppercase tracking-[.25em] text-white/60">Cart</p>
-                <span className="text-white/50 text-sm">{cart.reduce((a,b)=>a+b.qty,0)} items</span>
-              </div>
-              <div className="mt-4 space-y-3 max-h-[50vh] overflow-auto pr-2">
-                {cart.length===0 && <p className="text-white/40 text-sm">Your cart is empty.</p>}
-                {cart.map(it => {
-                  const p = products.find(pr => pr.id === it.product_id)
-                  if (!p) return null
-                  return (
-                    <div key={it.product_id} className="flex items-center gap-3">
-                      <img src={p.image_url} className="size-12 rounded object-cover" />
-                      <div className="flex-1">
-                        <p className="text-white/80 text-sm">{p.title}</p>
-                        <p className="text-white/40 text-xs">Qty {it.qty}</p>
+            <div className="flex flex-col gap-4 h-full">
+              <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm uppercase tracking-[.25em] text-white/60">Cart</p>
+                  <span className="text-white/50 text-sm">{cart.reduce((a,b)=>a+b.qty,0)} items</span>
+                </div>
+                <div className="mt-4 space-y-3 max-h-[42vh] overflow-auto pr-1">
+                  {cart.length===0 && <p className="text-white/40 text-sm">Your cart is empty.</p>}
+                  {cart.map(it => {
+                    const p = products.find(pr => pr.id === it.product_id) || displayProducts.find(pr => pr.id === it.product_id)
+                    if (!p) return null
+                    return (
+                      <div key={it.product_id} className="flex items-center gap-3 rounded border border-white/10 bg-white/[0.02] p-2">
+                        <img src={p.image_url} className="size-12 rounded object-cover" />
+                        <div className="flex-1">
+                          <p className="text-white/80 text-sm">{p.title}</p>
+                          <p className="text-white/40 text-xs">Qty {it.qty}</p>
+                        </div>
+                        <button onClick={()=>removeFromCart(it.product_id)} className="text-white/50 hover:text-white/80 text-xs">Remove</button>
                       </div>
-                      <button onClick={()=>removeFromCart(it.product_id)} className="text-white/40 hover:text-white/70">Remove</button>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
-              <div className="mt-6 border-t border-white/10 pt-4">
+
+              <div className="mt-auto rounded-md border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-center justify-between text-white/70">
                   <span>Total</span>
                   <span className="text-cyan-300">${total.toFixed(2)}</span>
                 </div>
-                <button onClick={checkout} className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded bg-cyan-400/10 text-cyan-200 border border-cyan-300/30 hover:bg-cyan-300/15">
+                <button onClick={checkout} className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-cyan-400/10 text-cyan-200 border border-cyan-300/30 hover:bg-cyan-300/15">
                   <ShoppingCart className="size-4" /> Checkout
                 </button>
               </div>
@@ -261,20 +334,30 @@ export default function Layout() {
           )}
 
           {view === 'portfolio' && (
-            <div>
+            <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
               <p className="text-sm uppercase tracking-[.25em] text-white/60">Contact</p>
               <div className="mt-4 space-y-2 text-white/70">
                 <p className="inline-flex items-center gap-2"><Phone className="size-4" /> +1 (555) 012-8899</p>
                 <p className="inline-flex items-center gap-2"><Mail className="size-4" /> studio@laser.cx</p>
               </div>
-              <button onClick={()=>setView('account')} className="mt-5 inline-flex items-center gap-2 text-cyan-300">
+              <button onClick={()=>setView('account')} className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-cyan-300">
                 <User className="size-4" /> Sign in to request a quote
               </button>
             </div>
           )}
 
+          {view === 'clients' && (
+            <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
+              <p className="text-sm uppercase tracking-[.25em] text-white/60">Work With Us</p>
+              <p className="text-white/60 text-sm mt-2">We craft premium engravings for brands and studios worldwide.</p>
+              <button onClick={()=>setView('account')} className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md border border-white/10 bg-white/[0.03] hover:bg-white/[0.06]">
+                <Send className="size-4" /> Start a brief
+              </button>
+            </div>
+          )}
+
           {view === 'account' && (
-            <div>
+            <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
               <p className="text-sm uppercase tracking-[.25em] text-white/60">Your Account</p>
               <div className="mt-4 text-white/70 space-y-2">
                 {user ? (
